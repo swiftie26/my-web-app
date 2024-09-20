@@ -1,21 +1,21 @@
 pipeline {
     agent any
+    
+    tools {
+        nodejs 'NodeJS 14'  // The name you set for NodeJS in the previous step
+    }
 
     stages {
         stage('Build') {
             steps {
-                script {
-                    echo "Building the application..."
-                    sh 'npm install'
-                }
+                git 'https://github.com/swiftie26/my-web-app.git'
+                sh 'npm install'
+                sh 'npm run build'
             }
         }
         stage('Test') {
             steps {
-                script {
-                    echo "Running tests..."
-                    sh 'npm test'
-                }
+                sh 'npm test'
             }
         }
         stage('Code Quality Analysis') {
