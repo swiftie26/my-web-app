@@ -14,27 +14,28 @@ pipeline {
             steps {
                 script {
                     echo "Running tests..."
-                    sh 'npm test' // You can implement your own test script in package.json
+                    sh 'npm test'
                 }
             }
         }
         stage('Code Quality Analysis') {
             steps {
                 script {
-                    echo "Running SonarQube analysis..."
-                    // Assume you have SonarQube configured in Jenkins
-                    withSonarQubeEnv('SonarQube') {
-                        sh 'sonar-scanner'
-                    }
+                    echo "Running ESLint..."
+                    sh 'npm run lint'
                 }
             }
         }
         stage('Deploy to Staging') {
             steps {
                 script {
-                    echo "Deploying to Staging..."
-                    sh 'docker build -t my-web-app .'
-                    sh 'docker run -d -p 3000:3000 my-web-app'
+                    echo "Building Docker image..."
+                    // Build the Docker image with your DockerHub username
+                    sh 'docker build -t <your-dockerhub-username>/my-web-app:latest .'
+                    
+                    echo "Running Docker container in staging..."
+                    // Run the Docker container on port 3000
+                    sh 'docker run -d -p 3000:3000 <ayesharana4>/my-web-app:latest'
                 }
             }
         }
@@ -42,8 +43,11 @@ pipeline {
             steps {
                 script {
                     echo "Deploying to Production..."
-                    // Use your release management tool here (e.g., AWS, Octopus Deploy)
-                    sh 'docker push my-web-app:latest'  // Assuming DockerHub or any registry
+                    // Log in to DockerHub and push the image
+                    withCredentials([ayesh(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
+                        sh 'docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASS'
+                        sh 'docker push <ayesharana4>/my-web-app:latest'
+                    }
                 }
             }
         }
